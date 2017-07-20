@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tree_span_array">
+        <item>10-11 feet</item>
+        <item>12-13 feet</item>
+        <item>14-15 feet</item>
+        <item>16-17 feet</item>
+        <item>18-19 feet</item>
+    </string-array>
+</resources>
