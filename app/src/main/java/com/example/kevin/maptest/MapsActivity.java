@@ -132,7 +132,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //place markers
         for(HammockSite site : sites){
-            Marker marker = mMap.addMarker(new MarkerOptions().position(site.getLoc()));
+            Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(site.getLat(), site.getLng())));
             //associate site with its marker
             marker.setTag(site);
         }
@@ -236,22 +236,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //check if too close to other sites
             for(HammockSite s : sites){
-                if(hsManager.sitesTooClose(s.getLoc(), loc))
+                if(hsManager.sitesTooClose(new LatLng(s.getLat(), s.getLng()), loc))
                     tooClose = true;
             }
 
             if(!tooClose) {
-                HammockSite hs = new HammockSite(loc, "", "", new TreeAttributes(0, 0));
+                HammockSite hs = new HammockSite(loc.latitude, loc.longitude, "", "", 0,0);
                 hsManager.addSite(hs);
 
 
                 Bundle bundle = new Bundle();
-                bundle.putDouble("lat", loc.latitude);
-                bundle.putDouble("long", loc.longitude);
-                bundle.putSerializable("UUID", hs.getId());
-                bundle.putString("description", hs.getDescription());
-                bundle.putInt("treeWidth", hs.getTreeWidth());
-                bundle.putInt("treeSpan", hs.getTreeDist());
+                bundle.putSerializable("site", hs);
                 Intent i = new Intent(MapsActivity.this, EditActivity.class);
                 i.putExtras(bundle);
                 startActivityForResult(i,0);
@@ -259,29 +254,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this, "New site is too close to an existing one!", Toast.LENGTH_LONG).show();
             }
         }else if(item.getItemId() == R.id.listView){
-            for(HammockSite site : sites){
-
-            }
+            LatLng currentLoc = getCurrentPosition();
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("sites", sites);
+            bundle.putDouble("lat", currentLoc.latitude);
+            bundle.putDouble("long", currentLoc.longitude);
             Intent i = new Intent(MapsActivity.this, ListActivity.class);
-            startActivity(i);
+            i.putExtras(bundle);
+            startActivityForResult(i, 9);
         }
         return true;
     }
     //handles marker clicks on map
     public boolean onMarkerClick(final Marker marker) {
         HammockSite site = (HammockSite)marker.getTag();
-        LatLng loc = site.getLoc();
+        LatLng loc = new LatLng(site.getLat(), site.getLng());
 
         if(loc != null) {
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("UUID", site.getId());
-                bundle.putDouble("lat", loc.latitude);
-                bundle.putDouble("long", loc.longitude);
-                bundle.putString("title", site.getTitle());
-                bundle.putString("description", site.getDescription());
-                bundle.putInt("treeWidth", site.getTreeWidth());
-                bundle.putInt("treeSpan", site.getTreeDist());
+                bundle.putSerializable("site", site);
                 Intent i = new Intent(MapsActivity.this, EditActivity.class);
                 i.putExtras(bundle);
                 startActivityForResult(i, 0);
@@ -293,23 +285,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(data == null)
             return;
-
         //10 = delete post button pushed in EditActivity
         if(resultCode == 10){
-            HammockSite site = hsManager.getHammockSite((UUID) data.getSerializableExtra("UUID"));
-            hsManager.deleteSite(site);
+            HammockSite site = (HammockSite) data.getSerializableExtra("site");
+            HammockSite dataSite = hsManager.getHammockSite(site.getId());
+            hsManager.deleteSite(dataSite);
+            //if we are recieving result back from requestcode 9 we originated from listview, so send back to listview
+            if(requestCode == 9){
+                callListActivity();
+            }
             recreate();
         }else if(resultCode == RESULT_OK){
-            //Toast.makeText(this, "Got results back", Toast.LENGTH_LONG).show();
-            HammockSite site = hsManager.getHammockSite((UUID) data.getSerializableExtra("UUID"));
-            site.setTitle(data.getStringExtra("title"));
-            site.setDescription(data.getStringExtra("description"));
-            site.setTreeWidth(data.getIntExtra("width", 0));
-            site.setTreeDist(data.getIntExtra("span", 0));
+            HammockSite site = (HammockSite) data.getSerializableExtra("site");
+            HammockSite dataSite = hsManager.getHammockSite(site.getId());
+            dataSite.setTitle(site.getTitle());
+            dataSite.setDescription(site.getDescription());
+            dataSite.setTreeWidth(site.getTreeWidth());
+            dataSite.setTreeDist(site.getTreeDist());
 
             hsManager.saveSites();
 
-            Log.d(TAG, "in onActivityResult UUID: " + site.getId().toString());
+            Log.d(TAG, "in onActivityResult UUID: " + dataSite.getId().toString());
+
+            //if we are recieving result back from requestcode 9 we originated from listview, so send back to listview
+            if(requestCode == 9){
+                callListActivity();
+            }
             recreate();
         }
     }
@@ -318,6 +319,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStop();
         hsManager.saveSites();
 
+    }
+    public void callListActivity(){
+        LatLng currentLoc = getCurrentPosition();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("sites", sites);
+        bundle.putDouble("lat", currentLoc.latitude);
+        bundle.putDouble("long", currentLoc.longitude);
+        Intent i = new Intent(MapsActivity.this, ListActivity.class);
+        i.putExtras(bundle);
+        startActivityForResult(i, 9);
     }
 
 }

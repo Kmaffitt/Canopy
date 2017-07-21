@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.Button;
 
 
+import com.example.kevin.maptest.Model.HammockSite;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class EditActivity extends AppCompatActivity {
 
     private Bundle bundle;
 
+
     //may be null
     private String title;
     private String desc;
@@ -35,6 +37,7 @@ public class EditActivity extends AppCompatActivity {
     private UUID id;
 
     //never null
+    private HammockSite site;
     private double lat;
     private double lng;
 
@@ -52,18 +55,18 @@ public class EditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
 
-        //get lat long of site
         Bundle bundle = this.getIntent().getExtras();
 
-        this.lat = bundle.getDouble("lat");
-        this.lng = bundle.getDouble("long");
+        site = (HammockSite) bundle.getSerializable("site");
+        this.lat = site.getLat();
+        this.lng = site.getLng();
         this.loc = new LatLng(lat, lng);
 
-        this.title = bundle.getString("title");
-        this.desc = bundle.getString("description");
-        this.id = (UUID) bundle.getSerializable("UUID");
-        this.diam = bundle.getInt("treeWidth");
-        this.span = bundle.getInt("treeSpan");
+        this.title = site.getTitle();
+        this.desc = site.getDescription();
+        this.id = site.getId();
+        this.diam = site.getTreeWidth();
+        this.span = site.getTreeDist();
 
         Log.d(TAG, "In onCreate UUID: " + id.toString() );
 
@@ -112,20 +115,14 @@ public class EditActivity extends AppCompatActivity {
     public Intent putData(){
         Bundle bundle = new Bundle();
         //get updated text
-        title  = mTitleText.getText().toString();
-        desc = mDescText.getText().toString();
+        site.setTitle(mTitleText.getText().toString());
+        site.setDescription(mDescText.getText().toString());
 
         //get updated spinner selections
-        diam = mTreeWidthSpinner.getSelectedItemPosition();
-        span = mTreeSpanSpinner.getSelectedItemPosition();
+        site.setTreeWidth(mTreeWidthSpinner.getSelectedItemPosition());
+        site.setTreeDist(mTreeSpanSpinner.getSelectedItemPosition());
 
-        bundle.putSerializable("UUID", id);
-        bundle.putDouble("lat", lat);
-        bundle.putDouble("lng", lng);
-        bundle.putString("title", title);
-        bundle.putString("description", desc);
-        bundle.putInt("width", diam);
-        bundle.putInt("span", span);
+        bundle.putSerializable("site", site);
 
         Intent intent = new Intent();
         intent.putExtras(bundle);

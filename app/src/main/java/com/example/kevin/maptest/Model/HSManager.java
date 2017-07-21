@@ -75,4 +75,5 @@ public class HSManager implements Serializable{
         }
         return false;
     }
+
 }
