@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.kevin.maptest.Model.ComparatorByDistance;
 import com.example.kevin.maptest.Model.HSManager;
 import com.example.kevin.maptest.Model.HammockSite;
 
@@ -48,6 +49,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ArrayList<HammockSite>sites;
 
     //constants, St. Louis is default loc
+    public static final int MAPS_ACTIVITY_REQ_CODE = 1;
+    public static final int LIST_ACTIVITY_REQ_CODE = 9;
+
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
     private static final int DEFAULT_ZOOM = 15;
@@ -291,7 +295,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             HammockSite dataSite = hsManager.getHammockSite(site.getId());
             hsManager.deleteSite(dataSite);
             //if we are recieving result back from requestcode 9 we originated from listview, so send back to listview
-            if(requestCode == 9){
+            if(requestCode == LIST_ACTIVITY_REQ_CODE){
                 callListActivity();
             }
             recreate();
@@ -308,7 +312,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d(TAG, "in onActivityResult UUID: " + dataSite.getId().toString());
 
             //if we are recieving result back from requestcode 9 we originated from listview, so send back to listview
-            if(requestCode == 9){
+            if(requestCode == LIST_ACTIVITY_REQ_CODE){
                 callListActivity();
             }
             recreate();
@@ -321,6 +325,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     public void callListActivity(){
+
         LatLng currentLoc = getCurrentPosition();
         Bundle bundle = new Bundle();
         bundle.putSerializable("sites", sites);
@@ -328,7 +333,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         bundle.putDouble("long", currentLoc.longitude);
         Intent i = new Intent(MapsActivity.this, ListActivity.class);
         i.putExtras(bundle);
-        startActivityForResult(i, 9);
+        startActivityForResult(i, LIST_ACTIVITY_REQ_CODE);
     }
 
 }

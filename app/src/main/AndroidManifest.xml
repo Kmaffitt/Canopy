@@ -45,7 +45,11 @@
             android:name=".EditActivity"
             android:label="@string/title_activity_edit"
             android:theme="@style/AppTheme"></activity>
-        <activity android:name=".ListActivity"></activity>
+        <activity
+            android:name=".ListActivity"
+            android:label="Site List"
+            android:theme="@style/AppTheme"></activity>
+
     </application>
 
 </manifest>

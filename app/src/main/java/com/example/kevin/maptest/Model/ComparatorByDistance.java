@@ -3,7 +3,7 @@ package com.example.kevin.maptest.Model;
 
 import java.util.Comparator;
 
-public class ComparatorByDistance implements Comparator<HammockSite>{
+public  class ComparatorByDistance implements Comparator<HammockSite>{
     private final double lat;
     private final double lng;
     private final double R = 3959.0;
